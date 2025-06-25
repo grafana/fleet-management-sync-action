@@ -1,10 +1,10 @@
-# fm-sync
+# fleet-management-sync-action
 
 A GitHub Action to sync pipeline configurations to Grafana Fleet Management.
 
 ## Overview
 
-`fm-sync` discovers pipeline configuration files in your repository and syncs them to Grafana Fleet Management. It recursively searches for YAML files containing pipeline definitions and uploads them using the Fleet Management API.
+`fleet-management-sync-action` discovers pipeline configuration files in your repository and syncs them to Grafana Fleet Management. It recursively searches for YAML files containing pipeline definitions and uploads them using the Fleet Management API.
 
 ## Usage
 
@@ -15,7 +15,7 @@ on:
     branches: [main]
     paths:
       - 'pipelines/**'
-      - '.github/workflows/fm-sync.yml'
+      - '.github/workflows/fleet-management-sync-action.yml'
 
 jobs:
   sync:
