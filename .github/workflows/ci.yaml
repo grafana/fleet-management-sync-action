@@ -1,0 +1,42 @@
+name: CI
+on:
+  pull_request:
+    branches:
+      - main
+    tags:
+      - "*"
+  push:
+    branches:
+      - main
+jobs:
+  lint:
+    runs-on: ubuntu-x64
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332
+        with:
+          persist-credentials: false
+      - name: Set up Go
+        uses: actions/setup-go@0a12ed9d6a96ab950c8f026ed9f722fe0da7ef32
+        with:
+          cache: false
+          go-version-file: ./go.mod
+      - name: Lint
+        uses: golangci/golangci-lint-action@4afd733a84b1f43292c63897423277bb7f4313a9
+        with:
+          version: v2.1.6
+  test:
+    runs-on: ubuntu-x64
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332
+        with:
+          persist-credentials: false
+      - name: Set up Go
+        uses: actions/setup-go@0a12ed9d6a96ab950c8f026ed9f722fe0da7ef32
+        with:
+          cache: false
+      - name: Test
+        run: go test ./...

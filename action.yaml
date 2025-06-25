@@ -1,0 +1,32 @@
+name: 'Fleet Management Sync'
+description: 'Sync pipeline configurations to Grafana Fleet Management'
+author: 'Grafana Labs'
+
+inputs:
+  root-path:
+    description: 'Root path to start searching for pipeline YAML files'
+    required: false
+    default: '.'
+  fm-username:
+    description: 'Fleet Management username for authentication'
+    required: true
+  fm-token:
+    description: 'Fleet Management API token for authentication'
+    required: true
+  timeout:
+    description: 'Timeout for the GitHub Action (e.g., "30s", "2m")'
+    required: false
+    default: '1m'
+  verbose:
+    description: 'Enable verbose logging for debugging'
+    required: false
+    default: 'false'
+  dry-run:
+    description: 'Run without making actual changes (shows what would be synced)'
+    required: false
+    default: 'false'
+
+runs:
+  using: 'docker'
+  # TODO: Replace with actual Docker Hub repository and pinned digest
+  image: 'docker://dockerhub-repo/fleet-management-sync-action@sha256:DIGEST'

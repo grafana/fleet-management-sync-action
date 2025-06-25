@@ -1,0 +1,5 @@
+contents: |
+  test content 2
+enabled: false
+matchers:
+- service=api
