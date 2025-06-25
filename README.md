@@ -23,7 +23,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       
-      - uses: grafana/fleet-management-sync-action@v1  # Replace with actual version/digest
+      - uses: grafana/fleet-management-sync-action@v1  # Replace with actual version
         with:
           root-path: 'pipelines'
           fm-username: ${{ secrets.FM_USERNAME }}
