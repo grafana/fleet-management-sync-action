@@ -1,6 +1,6 @@
 # fleet-management-sync-action
 
-A GitHub Action to sync pipeline configurations to Grafana Fleet Management.
+A GitHub Action to sync pipeline configurations to [Grafana Fleet Management](https://grafana.com/docs/grafana-cloud/send-data/fleet-management/introduction/).
 
 ## Overview
 
