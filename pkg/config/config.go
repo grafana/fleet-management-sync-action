@@ -10,8 +10,9 @@ import (
 
 // Validation errors
 var (
-	ErrMissingUsername = errors.New("username must be provided")
-	ErrMissingToken    = errors.New("token must be provided")
+	ErrMissingUsername          = errors.New("username must be provided")
+	ErrMissingToken             = errors.New("token must be provided")
+	ErrMissingPipelinesRootPath = errors.New("pipelines root path must be provided")
 )
 
 // Default timeout for the action
@@ -19,8 +20,8 @@ const DefaultTimeout = 1 * time.Minute
 
 // Config is the inputs used to configure the action
 type Config struct {
-	// RootPath is the path to start recursing from when looking for pipelines
-	RootPath string
+	// PipelinesRootPath is the path to start recursing from when looking for pipelines
+	PipelinesRootPath string
 
 	// Username is the username when authenticating to Fleet Management
 	Username string
@@ -41,10 +42,10 @@ type Config struct {
 // NewFromEnv creates a new Config from GitHub Action environment variables
 func NewFromEnv() (*Config, error) {
 	cfg := &Config{
-		RootPath: os.Getenv("INPUT_ROOT_PATH"),
-		Username: os.Getenv("INPUT_FM_USERNAME"),
-		Token:    os.Getenv("INPUT_FM_TOKEN"),
-		Timeout:  DefaultTimeout,
+		PipelinesRootPath: os.Getenv("INPUT_ROOT_PATH"),
+		Username:          os.Getenv("INPUT_FM_USERNAME"),
+		Token:             os.Getenv("INPUT_FM_TOKEN"),
+		Timeout:           DefaultTimeout,
 	}
 
 	// Parse timeout if provided
@@ -80,6 +81,9 @@ func (c *Config) Validate() error {
 	}
 	if c.Token == "" {
 		return ErrMissingToken
+	}
+	if c.PipelinesRootPath == "" {
+		return ErrMissingPipelinesRootPath
 	}
 	return nil
 }

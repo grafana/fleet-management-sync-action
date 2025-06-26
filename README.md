@@ -25,7 +25,7 @@ jobs:
       
       - uses: grafana/fleet-management-sync-action@v1  # Replace with actual version/digest
         with:
-          root-path: 'pipelines'
+          pipelines-root-path: './pipelines'
           fm-username: ${{ secrets.FM_USERNAME }}
           fm-token: ${{ secrets.FM_TOKEN }}
 ```
@@ -34,7 +34,7 @@ jobs:
 
 | Input | Description | Required | Default |
 |-------|-------------|----------|---------|
-| `root-path` | Root path to start searching for pipeline YAML files | No | `.` |
+| `pipelines-root-path` | Root path to start searching for pipeline YAML files | Yes | - |
 | `fm-username` | Fleet Management username for authentication | Yes | - |
 | `fm-token` | Fleet Management API token for authentication | Yes | - |
 
@@ -75,7 +75,7 @@ The `contents_file` path is resolved in the following order:
 
 1. Absolute path - used as-is
 2. Relative to the YAML file's directory
-3. Relative to the `root-path`
+3. Relative to the `pipelines-root-path`
 
 ## Examples
 

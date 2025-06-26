@@ -18,7 +18,7 @@ import (
 //
 // It returns a slice of all discovered pipelines, or an error if the discovery process fails.
 func FindPipelines(ctx context.Context, cfg *config.Config) ([]*pipeline.Pipeline, error) {
-	rootPath := cfg.RootPath
+	rootPath := cfg.PipelinesRootPath
 	if rootPath == "" {
 		cwd, err := os.Getwd()
 		if err != nil {

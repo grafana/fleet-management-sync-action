@@ -3,10 +3,9 @@ description: 'Sync pipeline configurations to Grafana Fleet Management'
 author: 'Grafana Labs'
 
 inputs:
-  root-path:
+  pipelines-root-path:
     description: 'Root path to start searching for pipeline YAML files'
-    required: false
-    default: '.'
+    required: true
   fm-username:
     description: 'Fleet Management username for authentication'
     required: true
