@@ -3,7 +3,6 @@ package discovery
 import (
 	"context"
 	"os"
-	"path/filepath"
 	"testing"
 
 	"github.com/grafana/fleet-management-sync-action/pkg/config"
@@ -23,6 +22,18 @@ func TestDiscoverPipelines(t *testing.T) {
 			rootPath:      "testdata/valid_pipelines",
 			wantCount:     2,
 			wantPipelines: []string{"test-pipeline-1", "pipeline2"},
+		},
+		{
+			name:          "discover alloy pipeline",
+			rootPath:      "testdata/valid_alloy_pipeline",
+			wantCount:     1,
+			wantPipelines: []string{"alloy_pipeline"},
+		},
+		{
+			name:          "ignore alloy pipeline without metadata",
+			rootPath:      "testdata/invalid_alloy_pipeline",
+			wantCount:     0,
+			wantPipelines: []string{},
 		},
 		{
 			name:     "discover with non-existent root",
@@ -91,81 +102,4 @@ contents: test`
 	require.NoError(t, err)
 	require.Len(t, pipelines, 1)
 	require.Equal(t, "cwd-pipeline", pipelines[0].Name)
-}
-
-func TestResolveContentsPath(t *testing.T) {
-	// Use testdata paths
-	rootPath := "testdata/path_resolution"
-	yamlPath := filepath.Join(rootPath, "pipelines", "test.yaml")
-
-	// Get absolute paths for comparison
-	absRoot, err := filepath.Abs(rootPath)
-	require.NoError(t, err)
-	absYAMLDir := filepath.Join(absRoot, "pipelines")
-
-	relativeToYAML := filepath.Join(absYAMLDir, "config.alloy")
-	relativeToRoot := filepath.Join(absRoot, "shared.alloy")
-
-	tests := []struct {
-		name         string
-		contentsFile string
-		yamlPath     string
-		rootPath     string
-		want         string
-		wantErr      bool
-	}{
-		{
-			name:         "absolute path exists",
-			contentsFile: relativeToYAML,
-			yamlPath:     yamlPath,
-			rootPath:     absRoot,
-			want:         relativeToYAML,
-			wantErr:      false,
-		},
-		{
-			name:         "relative to yaml",
-			contentsFile: "config.alloy",
-			yamlPath:     yamlPath,
-			rootPath:     absRoot,
-			want:         relativeToYAML,
-			wantErr:      false,
-		},
-		{
-			name:         "relative to root",
-			contentsFile: "shared.alloy",
-			yamlPath:     yamlPath,
-			rootPath:     absRoot,
-			want:         relativeToRoot,
-			wantErr:      false,
-		},
-		{
-			name:         "file not found",
-			contentsFile: "nonexistent.alloy",
-			yamlPath:     yamlPath,
-			rootPath:     absRoot,
-			want:         "",
-			wantErr:      true,
-		},
-		{
-			name:         "absolute path not found",
-			contentsFile: "/absolute/not/found.alloy",
-			yamlPath:     yamlPath,
-			rootPath:     absRoot,
-			want:         "",
-			wantErr:      true,
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got, err := resolveContentsPath(tt.contentsFile, tt.yamlPath, tt.rootPath)
-
-			if tt.wantErr {
-				require.Error(t, err)
-			} else {
-				require.NoError(t, err)
-				require.Equal(t, tt.want, got)
-			}
-		})
-	}
 }

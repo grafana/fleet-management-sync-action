@@ -4,7 +4,7 @@ A GitHub Action to sync pipeline configurations to [Grafana Fleet Management](ht
 
 ## Overview
 
-`fleet-management-sync-action` discovers pipeline configuration files in your repository and syncs them to Grafana Fleet Management. It recursively searches for YAML files containing pipeline definitions and uploads them using the Fleet Management API.
+`fleet-management-sync-action` discovers pipeline configuration files in your repository and syncs them to Grafana Fleet Management. It recursively searches for YAML and/or .alloy files containing pipeline definitions and uploads them using the Fleet Management API.
 
 ## Usage
 
@@ -40,61 +40,60 @@ jobs:
 
 ## Pipeline Configuration
 
-Pipeline files must be YAML files (`.yaml` or `.yml`) with the following structure:
+Pipeline files can be defined in two ways:
 
-### Option 1: Inline Configuration
+### Option 1: YAML Configuration File
+
+YAML files (`.yaml` or `.yml`) with the following structure:
 
 ```yaml
-name: my-pipeline    # Optional - defaults to filename without extension
+name: my_pipeline    # Optional - defaults to filename without extension
 contents: |          # Inline pipeline configuration
   logging {
     level = "info"
   }
 enabled: true
 matchers:
-  - environment=production
-  - service=api
+  - "environment=production"
+  - "service=api"
 ```
 
-### Option 2: External Configuration File
+### Option 2: Alloy Configuration File
 
-```yaml
-name: my-pipeline
-contents_file: configs/logging.alloy  # Path to external config file
+Alloy files (`.alloy`) with a metadata header:
+
+```alloy
+/* fleet-management
+name: my_pipeline
 enabled: true
 matchers:
-  - environment=production
-  - service=api
+  - "environment=production"
+  - "service=api"
+*/
+
+logging {
+  level = "info"
+}
 ```
 
-**Important**: You must specify either `contents` OR `contents_file`, but not both.
-
-### Path Resolution for `contents_file`
-
-The `contents_file` path is resolved in the following order:
-
-1. Absolute path - used as-is
-2. Relative to the YAML file's directory
-3. Relative to the `pipelines-root-path`
+The metadata block must be at the top of the file, but can be preceded by whitespace.
 
 ## Examples
 
-### Directory Structure
+### Example 1: YAML-based Pipelines
+
+This example shows how to define pipelines using YAML files.
+
+#### Directory Structure
 
 ```
 .
-├── configs/
-│   ├── logging.alloy
-│   ├── tracing.alloy
-│   └── metrics.alloy
 └── pipelines/
-    ├── frontend.yaml      # uses inline contents
-    ├── backend.yaml       # uses relative path
-    └── monitoring/
-        └── o11y.yaml      # uses path from the repo root
+    ├── frontend.yaml
+    └── another-pipeline.yaml
 ```
 
-### frontend.yaml - Inline Configuration
+#### frontend.yaml
 
 ```yaml
 # No `name` field means that this pipeline will be synced with the filename
@@ -105,27 +104,33 @@ contents: |
   }
 enabled: true
 matchers:
-  - app=frontend
+  - "app=frontend"
 ```
 
-### backend.yaml - External Configuration (Relative)
+### Example 2: Alloy-based Pipelines
 
-```yaml
-name: api-monitoring
-contents_file: ../configs/logging.alloy
-enabled: true
-matchers:
-  - app=backend
-  - tier=critical
+This example shows how to define pipelines using Alloy files.
+
+#### Directory Structure
+
+```
+.
+└── pipelines/
+    ├── backend.alloy
+    └── another-pipeline.alloy
 ```
 
-### o11y.yaml - External Configuration (From root-path)
+#### backend.alloy
 
-```yaml
-name: infra-o11y
-contents_file: configs/tracing.alloy
+```alloy
+/* fleet-management
+name: backend-pipeline
 enabled: true
 matchers:
-  - app=infra-o11y
-  - tier=critical
+  - "app=backend"
+*/
+
+logging {
+  level = "info"
+}
 ```

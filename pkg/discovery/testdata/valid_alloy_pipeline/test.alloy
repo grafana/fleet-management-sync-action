@@ -1,0 +1,8 @@
+/* fleet-management
+name: alloy_pipeline
+matchers:
+  - "foo=bar"
+*/
+
+logging {
+}

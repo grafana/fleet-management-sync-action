@@ -1,6 +1,7 @@
 package discovery
 
 import (
+	"bytes"
 	"context"
 	"fmt"
 	"os"
@@ -10,6 +11,11 @@ import (
 	"github.com/grafana/fleet-management-sync-action/pkg/config"
 	"github.com/grafana/fleet-management-sync-action/pkg/pipeline"
 	"gopkg.in/yaml.v3"
+)
+
+const (
+	pipelineMetadataHeader = "/* fleet-management"
+	pipelineMetadataFooter = "*/"
 )
 
 // FindPipelines walks the filesystem starting from the RootPath in cfg and finds all YAML files, attempting to parse them as Pipeline configurations.
@@ -47,9 +53,9 @@ func FindPipelines(ctx context.Context, cfg *config.Config) ([]*pipeline.Pipelin
 			return nil
 		}
 
-		// Check if file has .yaml or .yml extension
+		// Check if file has a supported extension
 		ext := strings.ToLower(filepath.Ext(path))
-		if ext != ".yaml" && ext != ".yml" {
+		if ext != ".yaml" && ext != ".yml" && ext != ".alloy" {
 			return nil
 		}
 
@@ -59,8 +65,18 @@ func FindPipelines(ctx context.Context, cfg *config.Config) ([]*pipeline.Pipelin
 		}
 
 		var p pipeline.Pipeline
-		if err := yaml.Unmarshal(data, &p); err != nil {
-			return fmt.Errorf("failed to parse pipeline from %s: %w", path, err)
+		if ext == ".alloy" {
+			var err error
+			p, err = parseAlloyMetadata(data)
+			if err != nil {
+				// This file is not a pipeline, so we can ignore it.
+				return nil
+			}
+			p.Contents = string(data)
+		} else {
+			if err := yaml.Unmarshal(data, &p); err != nil {
+				return fmt.Errorf("failed to parse pipeline from %s: %w", path, err)
+			}
 		}
 
 		// If no name provided, use filename without extension
@@ -69,18 +85,9 @@ func FindPipelines(ctx context.Context, cfg *config.Config) ([]*pipeline.Pipelin
 			p.Name = strings.TrimSuffix(base, filepath.Ext(base))
 		}
 
-		// Validate the pipeline configuration before reading contents
+		// Validate the pipeline configuration
 		if err := p.Validate(); err != nil {
 			return fmt.Errorf("invalid pipeline in %s: %w", path, err)
-		}
-
-		// Resolve contents_file path if specified, this is done for consistency
-		if p.ContentsFile != "" {
-			resolvedPath, err := resolveContentsPath(p.ContentsFile, path, rootPath)
-			if err != nil {
-				return fmt.Errorf("failed to resolve contents_file for pipeline in %s: %w", path, err)
-			}
-			p.ContentsFile = resolvedPath
 		}
 
 		// Check for duplicate pipeline names
@@ -88,11 +95,6 @@ func FindPipelines(ctx context.Context, cfg *config.Config) ([]*pipeline.Pipelin
 			return fmt.Errorf("duplicate pipeline name '%s' found in %s and %s", p.Name, existingPath, path)
 		}
 		seen[p.Name] = path
-
-		// Load contents from ContentsFile, if specified
-		if err := p.ReadContents(); err != nil {
-			return fmt.Errorf("failed to read contents for pipeline in %s: %w", path, err)
-		}
 
 		pipelines = append(pipelines, &p)
 		return nil
@@ -105,33 +107,24 @@ func FindPipelines(ctx context.Context, cfg *config.Config) ([]*pipeline.Pipelin
 	return pipelines, nil
 }
 
-// resolveContentsPath resolves a contents_file path by trying:
-// 1. If absolute, return as-is
-// 2. Relative to the YAML file's directory
-// 3. Relative to the root path
-// Returns error if the file doesn't exist in any location
-func resolveContentsPath(contentsFile, yamlPath, rootPath string) (string, error) {
-	// If already absolute, check if it exists
-	if filepath.IsAbs(contentsFile) {
-		if _, err := os.Stat(contentsFile); err != nil {
-			return "", fmt.Errorf("contents file not found at absolute path %s: %w", contentsFile, err)
-		}
-		return contentsFile, nil
+// parseAlloyMetadata parses the fleet management metadata from an alloy file.
+func parseAlloyMetadata(data []byte) (pipeline.Pipeline, error) {
+	var p pipeline.Pipeline
+
+	trimmedData := bytes.TrimSpace(data)
+	if !bytes.HasPrefix(trimmedData, []byte(pipelineMetadataHeader)) {
+		return p, fmt.Errorf("no fleet-management metadata block found at the beginning of the file")
 	}
 
-	// Try relative to YAML file's directory
-	yamlDir := filepath.Dir(yamlPath)
-	relativeToYAML := filepath.Join(yamlDir, contentsFile)
-	if _, err := os.Stat(relativeToYAML); err == nil {
-		return filepath.Abs(relativeToYAML)
+	headerEnd := bytes.Index(trimmedData, []byte(pipelineMetadataFooter))
+	if headerEnd == -1 {
+		return p, fmt.Errorf("could not find closing tag for fleet-management metadata block")
 	}
 
-	// Try relative to root path
-	relativeToRoot := filepath.Join(rootPath, contentsFile)
-	if _, err := os.Stat(relativeToRoot); err == nil {
-		return filepath.Abs(relativeToRoot)
+	metadata := trimmedData[len(pipelineMetadataHeader):headerEnd]
+	if err := yaml.Unmarshal(metadata, &p); err != nil {
+		return p, fmt.Errorf("failed to parse metadata: %w", err)
 	}
 
-	return "", fmt.Errorf("contents file %s not found relative to YAML (%s) or root (%s)",
-		contentsFile, yamlDir, rootPath)
+	return p, nil
 }
