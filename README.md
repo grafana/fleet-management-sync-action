@@ -40,42 +40,30 @@ jobs:
 
 ## Pipeline Configuration
 
-Pipeline files must be YAML files (`.yaml` or `.yml`) with the following structure:
+Pipeline definitions require two files in the same directory:
 
-### Option 1: Inline Configuration
+1.  A YAML file (`.yaml` or `.yml`) for metadata.
+2.  An Alloy file (`.alloy`) for the pipeline's contents.
 
+The YAML and Alloy files must share the same base name (e.g., `my-pipeline.yaml` and `my-pipeline.alloy`).
+
+### Example
+
+**`my-pipeline.yaml` (Metadata)**
 ```yaml
 name: my-pipeline    # Optional - defaults to filename without extension
-contents: |          # Inline pipeline configuration
-  logging {
-    level = "info"
-  }
 enabled: true
 matchers:
   - environment=production
   - service=api
 ```
 
-### Option 2: External Configuration File
-
-```yaml
-name: my-pipeline
-contents_file: configs/logging.alloy  # Path to external config file
-enabled: true
-matchers:
-  - environment=production
-  - service=api
+**`my-pipeline.alloy` (Contents)**
+```alloy
+logging {
+  level = "info"
+}
 ```
-
-**Important**: You must specify either `contents` OR `contents_file`, but not both.
-
-### Path Resolution for `contents_file`
-
-The `contents_file` path is resolved in the following order:
-
-1. Absolute path - used as-is
-2. Relative to the YAML file's directory
-3. Relative to the `pipelines-root-path`
 
 ## Examples
 
@@ -83,49 +71,12 @@ The `contents_file` path is resolved in the following order:
 
 ```
 .
-├── configs/
-│   ├── logging.alloy
-│   ├── tracing.alloy
-│   └── metrics.alloy
 └── pipelines/
-    ├── frontend.yaml      # uses inline contents
-    ├── backend.yaml       # uses relative path
+    ├── frontend.yaml
+    ├── frontend.alloy
+    ├── backend.yaml
+    ├── backend.alloy
     └── monitoring/
-        └── o11y.yaml      # uses path from the repo root
-```
-
-### frontend.yaml - Inline Configuration
-
-```yaml
-# No `name` field means that this pipeline will be synced with the filename
-# without the extension (frontend)
-contents: |
-  prometheus.scrape "app_metrics" {
-    targets = [{__address__ = "localhost:8080"}]
-  }
-enabled: true
-matchers:
-  - app=frontend
-```
-
-### backend.yaml - External Configuration (Relative)
-
-```yaml
-name: api-monitoring
-contents_file: ../configs/logging.alloy
-enabled: true
-matchers:
-  - app=backend
-  - tier=critical
-```
-
-### o11y.yaml - External Configuration (From root-path)
-
-```yaml
-name: infra-o11y
-contents_file: configs/tracing.alloy
-enabled: true
-matchers:
-  - app=infra-o11y
-  - tier=critical
+        ├── o11y.yaml
+        └── o11y.alloy
 ```

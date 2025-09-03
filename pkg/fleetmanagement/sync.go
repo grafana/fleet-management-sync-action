@@ -6,14 +6,14 @@ import (
 	"log/slog"
 
 	"github.com/grafana/fleet-management-sync-action/pkg/config"
-	"github.com/grafana/fleet-management-sync-action/pkg/pipeline"
+	"github.com/grafana/fleet-management-sync-action/pkg/discovery"
 )
 
 // SyncPipelines syncs the discovered pipelines with the Fleet Management API.
 //
 // If cfg.DryRun is set, this will log the pipelines that would have been synced but
 // not actually sync them.
-func SyncPipelines(cfg *config.Config, pipelines []*pipeline.Pipeline) error {
+func SyncPipelines(cfg *config.Config, pipelines []*discovery.Pipeline) error {
 	slog.Info("starting pipeline sync",
 		"username", cfg.Username,
 		"pipeline_count", len(pipelines),
