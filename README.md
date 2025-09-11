@@ -28,6 +28,7 @@ jobs:
           pipelines-root-path: './pipelines'
           fm-username: ${{ secrets.FM_USERNAME }}
           fm-token: ${{ secrets.FM_TOKEN }}
+          namespace: ${{ github.event.repository.name }}
 ```
 
 ## Inputs
@@ -37,6 +38,35 @@ jobs:
 | `pipelines-root-path` | Root path to start searching for pipeline YAML files | Yes | - |
 | `fm-username` | Fleet Management username for authentication | Yes | - |
 | `fm-token` | Fleet Management API token for authentication | Yes | - |
+| `namespace` | Namespace for the pipelines. See "Configuring the Namespace" for examples. | Yes | - |
+
+## Configuring the Namespace
+
+The `namespace` input is used to scope syncs, so a sync with a given namespace will not affect pipelines that were created from other sources (i.e., with a different namespace). You can use a hardcoded string, or a dynamically generated value.
+
+### Examples
+
+#### Hardcoded Namespace
+
+You can use a simple hardcoded string for the namespace.
+
+```yaml
+- uses: grafana/fleet-management-sync-action@v1
+  with:
+    namespace: "my-production-pipelines"
+    # ... other inputs
+```
+
+#### Dynamic Namespace from Repository Name
+
+You can use GitHub Actions expressions to dynamically set the `namespace` to the name of the repository.
+
+```yaml
+- uses: grafana/fleet-management-sync-action@v1
+  with:
+    namespace: ${{ github.event.repository.name }}
+    # ... other inputs
+```
 
 ## Pipeline Configuration
 

@@ -4,7 +4,7 @@ author: 'Grafana Labs'
 
 inputs:
   pipelines-root-path:
-    description: 'Root path to start searching for pipeline YAML files'
+    description: 'Root path to start searching for pipeline files'
     required: true
   fm-username:
     description: 'Fleet Management username for authentication'
@@ -24,6 +24,9 @@ inputs:
     description: 'Run without making actual changes (shows what would be synced)'
     required: false
     default: 'false'
+  namespace:
+    description: "Namespace for the pipelines, used to scope syncs"
+    required: true
 
 runs:
   using: 'docker'

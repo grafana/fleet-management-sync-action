@@ -13,6 +13,7 @@ var (
 	ErrMissingUsername          = errors.New("username must be provided")
 	ErrMissingToken             = errors.New("token must be provided")
 	ErrMissingPipelinesRootPath = errors.New("pipelines root path must be provided")
+	ErrMissingNamespace         = errors.New("namespace must be provided")
 )
 
 // Default timeout for the action
@@ -29,6 +30,9 @@ type Config struct {
 	// Token is the token to use when authenticating to Fleet Management
 	Token string
 
+	// Namespace is the namespace to sync the pipelines to
+	Namespace string
+
 	// Timeout is the maximum time to wait for operations to complete
 	Timeout time.Duration
 
@@ -42,9 +46,10 @@ type Config struct {
 // NewFromEnv creates a new Config from GitHub Action environment variables
 func NewFromEnv() (*Config, error) {
 	cfg := &Config{
-		PipelinesRootPath: os.Getenv("INPUT_ROOT_PATH"),
+		PipelinesRootPath: os.Getenv("INPUT_PIPELINES_ROOT_PATH"),
 		Username:          os.Getenv("INPUT_FM_USERNAME"),
 		Token:             os.Getenv("INPUT_FM_TOKEN"),
+		Namespace:         os.Getenv("INPUT_NAMESPACE"),
 		Timeout:           DefaultTimeout,
 	}
 
@@ -84,6 +89,9 @@ func (c *Config) Validate() error {
 	}
 	if c.PipelinesRootPath == "" {
 		return ErrMissingPipelinesRootPath
+	}
+	if c.Namespace == "" {
+		return ErrMissingNamespace
 	}
 	return nil
 }

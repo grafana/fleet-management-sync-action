@@ -19,9 +19,10 @@ func main() {
 	}
 
 	cfg.SetupLogging()
-	slog.Info("Starting fm-sync",
-		"pipelines_root_path", cfg.PipelinesRootPath,
-		"timeout", cfg.Timeout.String())
+	    slog.Info("Starting fm-sync",
+        "pipelines_root_path", cfg.PipelinesRootPath,
+        "namespace", cfg.Namespace,
+        "timeout", cfg.Timeout.String())
 
 	ctx, cancel := context.WithTimeout(context.Background(), cfg.Timeout)
 	defer cancel()
