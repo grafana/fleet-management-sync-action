@@ -18,6 +18,7 @@ func TestValidate(t *testing.T) {
 				PipelinesRootPath: "/some/path",
 				Username:          "testuser",
 				Token:             "testtoken",
+				Namespace:         "test-namespace",
 			},
 			wantErr: nil,
 		},
