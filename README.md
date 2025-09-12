@@ -42,11 +42,11 @@ jobs:
 
 ## Configuring the Namespace
 
-The `namespace` input is used to scope syncs, so a sync with a given namespace will not affect pipelines that were created from other sources (i.e., with a different namespace). You can use a hardcoded string, or a dynamically generated value.
+The `namespace` input is used to scope sync cleanup, so a sync with a given namespace will only clean up pipelines no longer present in the repository, and not any pipelines created from other sources (i.e., with a different namespace).
 
-### Examples
+Here are some examples of how you can configure the namespace, though you can use any value that you want, within length limits:
 
-#### Hardcoded Namespace
+### Hardcoded Namespace
 
 You can use a simple hardcoded string for the namespace.
 
@@ -57,7 +57,7 @@ You can use a simple hardcoded string for the namespace.
     # ... other inputs
 ```
 
-#### Dynamic Namespace from Repository Name
+### Namespace from Repository Name
 
 You can use GitHub Actions expressions to dynamically set the `namespace` to the name of the repository.
 
@@ -72,14 +72,17 @@ You can use GitHub Actions expressions to dynamically set the `namespace` to the
 
 Pipeline definitions require two files in the same directory:
 
-1.  A YAML file (`.yaml` or `.yml`) for metadata.
-2.  An Alloy file (`.alloy`) for the pipeline's contents.
+1. A YAML file (`.yaml` or `.yml`) for metadata.
+2. An Alloy file (`.alloy`) for the pipeline's contents.
 
 The YAML and Alloy files must share the same base name (e.g., `my-pipeline.yaml` and `my-pipeline.alloy`).
+
+You can use any directory structure you want, the action will recursively search the `pipelines-root-path` for YAML and Alloy files.
 
 ### Example
 
 **`my-pipeline.yaml` (Metadata)**
+
 ```yaml
 name: my-pipeline    # Optional - defaults to filename without extension
 enabled: true
@@ -89,17 +92,16 @@ matchers:
 ```
 
 **`my-pipeline.alloy` (Contents)**
+
 ```alloy
 logging {
   level = "info"
 }
 ```
 
-## Examples
-
 ### Directory Structure
 
-```
+```text
 .
 └── pipelines/
     ├── frontend.yaml
