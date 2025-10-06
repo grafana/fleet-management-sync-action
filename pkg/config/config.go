@@ -21,6 +21,9 @@ const DefaultTimeout = 1 * time.Minute
 
 // Config is the inputs used to configure the action
 type Config struct {
+	// FleetManagementURL is the URL of the Fleet Management API
+	FleetManagementURL string
+
 	// PipelinesRootPath is the path to start recursing from when looking for pipelines
 	PipelinesRootPath string
 
@@ -32,6 +35,9 @@ type Config struct {
 
 	// Namespace is the namespace to sync the pipelines to
 	Namespace string
+
+	// GlobalMatcher is an optional matcher to add to all pipelines
+	GlobalMatcher string
 
 	// Timeout is the maximum time to wait for operations to complete
 	Timeout time.Duration
@@ -46,11 +52,13 @@ type Config struct {
 // NewFromEnv creates a new Config from GitHub Action environment variables
 func NewFromEnv() (*Config, error) {
 	cfg := &Config{
-		PipelinesRootPath: os.Getenv("INPUT_PIPELINES_ROOT_PATH"),
-		Username:          os.Getenv("INPUT_FM_USERNAME"),
-		Token:             os.Getenv("INPUT_FM_TOKEN"),
-		Namespace:         os.Getenv("INPUT_NAMESPACE"),
-		Timeout:           DefaultTimeout,
+		FleetManagementURL: os.Getenv("INPUT_FM_URL"),
+		PipelinesRootPath:  os.Getenv("INPUT_PIPELINES_ROOT_PATH"),
+		Username:           os.Getenv("INPUT_FM_USERNAME"),
+		Token:              os.Getenv("INPUT_FM_TOKEN"),
+		Namespace:          os.Getenv("INPUT_NAMESPACE"),
+		GlobalMatcher:      os.Getenv("INPUT_GLOBAL_MATCHER"),
+		Timeout:            DefaultTimeout,
 	}
 
 	// Parse timeout if provided

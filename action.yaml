@@ -6,6 +6,9 @@ inputs:
   pipelines-root-path:
     description: 'Root path to start searching for pipeline files'
     required: true
+  fm-url:
+    description: 'Fleet Management API URL'
+    required: true
   fm-username:
     description: 'Fleet Management username for authentication'
     required: true
@@ -27,6 +30,10 @@ inputs:
   namespace:
     description: "Namespace for the pipelines, used to scope syncs"
     required: true
+  global-matcher:
+    description: 'Global matcher to add to all pipelines (optional)'
+    required: false
+    default: ''
 
 runs:
   using: 'docker'

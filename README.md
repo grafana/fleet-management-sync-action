@@ -26,6 +26,7 @@ jobs:
       - uses: grafana/fleet-management-sync-action@v1  # Replace with actual version
         with:
           pipelines-root-path: './pipelines'
+          fm-url: ${{ secrets.FM_URL }}
           fm-username: ${{ secrets.FM_USERNAME }}
           fm-token: ${{ secrets.FM_TOKEN }}
           namespace: ${{ github.event.repository.name }}
@@ -36,13 +37,17 @@ jobs:
 | Input | Description | Required | Default |
 |-------|-------------|----------|---------|
 | `pipelines-root-path` | Root path to start searching for pipeline YAML files | Yes | - |
+| `fm-url` | Fleet Management API URL | Yes | - |
 | `fm-username` | Fleet Management username for authentication | Yes | - |
 | `fm-token` | Fleet Management API token for authentication | Yes | - |
 | `namespace` | Namespace for the pipelines. See "Configuring the Namespace" for examples. | Yes | - |
+| `global-matcher` | Global matcher added to all pipelines. Useful for targeting specific collector groups across multiple repositories. See "Using Global Matchers" for examples. | No | - |
 
 ## Configuring the Namespace
 
-The `namespace` input is used to scope sync cleanup, so a sync with a given namespace will only clean up pipelines no longer present in the repository, and not any pipelines created from other sources (i.e., with a different namespace).
+The `namespace` input is used to scope sync cleanup. During a sync, the action will delete pipelines in the Fleet Management API that match the same source type (Git) and namespace but are NOT included in the current sync request. This ensures your API state matches your repository while leaving pipelines from other sources or namespaces untouched.
+
+**Note:** Namespace and source type are used to determine which pipelines to delete during cleanup. However, pipelines are identified by name during the sync itself. If a pipeline with the same name already exists in the API (even from a different source or namespace), it will be overwritten. Ensure pipeline names are unique across all sources to avoid conflicts.
 
 Here are some examples of how you can configure the namespace, though you can use any value that you want, within length limits:
 
@@ -68,6 +73,28 @@ You can use GitHub Actions expressions to dynamically set the `namespace` to the
     # ... other inputs
 ```
 
+## Using Global Matchers
+
+The `global-matcher` input allows you to add a matcher to all pipelines synced from a repository. This is useful if you only want a particular group of collectors to receive the pipelines from a particular repo.
+
+For example, if you manage separate repositories for different environments or teams:
+
+```yaml
+- uses: grafana/fleet-management-sync-action@v1
+  with:
+    global-matcher: "namespace=prod"
+    # ... other inputs
+```
+
+or
+
+```yaml
+- uses: grafana/fleet-management-sync-action@v1
+  with:
+    global-matcher: "team=platform"
+    # ... other inputs
+```
+
 ## Pipeline Configuration
 
 Pipeline definitions require two files in the same directory:
@@ -75,7 +102,7 @@ Pipeline definitions require two files in the same directory:
 1. A YAML file (`.yaml` or `.yml`) for metadata.
 2. An Alloy file (`.alloy`) for the pipeline's contents.
 
-The YAML and Alloy files must share the same base name (e.g., `my-pipeline.yaml` and `my-pipeline.alloy`).
+The YAML and Alloy files must share the same base name (e.g., `my-pipeline.yaml` and `my-pipeline.alloy`). If a YAML file does not have a corresponding Alloy file with the same base name, the action will fail with an error.
 
 You can use any directory structure you want, the action will recursively search the `pipelines-root-path` for YAML and Alloy files.
 
@@ -84,7 +111,7 @@ You can use any directory structure you want, the action will recursively search
 **`my-pipeline.yaml` (Metadata)**
 
 ```yaml
-name: my-pipeline    # Optional - defaults to filename without extension
+name: my-pipeline    # Optional - defaults to the base filename without extension
 enabled: true
 matchers:
   - environment=production
@@ -112,3 +139,28 @@ logging {
         ├── o11y.yaml
         └── o11y.alloy
 ```
+
+## Troubleshooting
+
+### Authentication Failures
+
+If you encounter authentication errors, verify that:
+
+- `fm-username` and `fm-token` are correctly set in your workflow
+- The token has not expired
+- The Fleet Management URL is correct for your environment
+
+### Missing Alloy Files
+
+If you see errors about missing Alloy files, ensure that:
+
+- Every YAML file has a corresponding `.alloy` file with the same base name
+- Both files are in the same directory
+- The Alloy file has the correct extension (`.alloy`, not `.alloy.txt` or similar)
+
+### Duplicate Pipeline Names
+
+Pipeline names must be unique across all discovered files. If you have duplicate names (either explicit or defaulted from filenames), the action will fail. To resolve:
+
+- Explicitly set different `name` values in the YAML metadata files, or
+- Rename the files to have unique base names
