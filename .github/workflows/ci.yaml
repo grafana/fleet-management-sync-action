@@ -18,7 +18,7 @@ jobs:
         with:
           persist-credentials: false
       - name: Set up Go
-        uses: actions/setup-go@0a12ed9d6a96ab950c8f026ed9f722fe0da7ef32
+        uses: actions/setup-go@faf52423ec0d44c58f68e83b614bfcd99dded66f
         with:
           cache: false
           go-version-file: ./go.mod
@@ -35,7 +35,7 @@ jobs:
         with:
           persist-credentials: false
       - name: Set up Go
-        uses: actions/setup-go@0a12ed9d6a96ab950c8f026ed9f722fe0da7ef32
+        uses: actions/setup-go@faf52423ec0d44c58f68e83b614bfcd99dded66f
         with:
           cache: false
       - name: Test
