@@ -8,7 +8,7 @@ import (
 	"strings"
 
 	"github.com/grafana/fleet-management-sync-action/pkg/config"
-	"gopkg.in/yaml.v3"
+	"github.com/goccy/go-yaml"
 )
 
 // FindPipelines walks the filesystem starting from the RootPath in cfg and finds all YAML files, attempting to parse them as Pipeline configurations.
@@ -60,9 +60,7 @@ func FindPipelines(ctx context.Context, cfg *config.Config) ([]*Pipeline, error)
 		}
 
 		var p Pipeline
-		decoder := yaml.NewDecoder(strings.NewReader(string(data)))
-		decoder.KnownFields(true)
-
+		decoder := yaml.NewDecoder(strings.NewReader(string(data)), yaml.Strict())
 		if err := decoder.Decode(&p); err != nil {
 			return fmt.Errorf("failed to parse pipeline from %s: %w", path, err)
 		}
@@ -91,5 +89,3 @@ func FindPipelines(ctx context.Context, cfg *config.Config) ([]*Pipeline, error)
 
 	return pipelines, nil
 }
-
-
