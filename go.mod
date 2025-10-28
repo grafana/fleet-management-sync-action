@@ -6,7 +6,7 @@ require (
 	connectrpc.com/connect v1.16.1
 	github.com/goccy/go-yaml v1.18.0
 	github.com/grafana/fleet-management-api v1.1.0
-	github.com/stretchr/testify v1.10.0
+	github.com/stretchr/testify v1.11.1
 )
 
 require (
