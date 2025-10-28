@@ -37,7 +37,7 @@ jobs:
 | Input | Description | Required | Default |
 |-------|-------------|----------|---------|
 | `pipelines-root-path` | Root path to start searching for pipeline YAML files | Yes | - |
-| `fm-url` | Fleet Management API URL | Yes | - |
+| `fm-url` | [Fleet Management API URL](https://grafana.com/docs/grafana-cloud/send-data/fleet-management/api-reference/pipeline-api/#find-the-base-url) | Yes | - |
 | `fm-username` | Fleet Management username for authentication | Yes | - |
 | `fm-token` | Fleet Management API token for authentication | Yes | - |
 | `namespace` | Namespace for the pipelines. See "Configuring the Namespace" for examples. | Yes | - |
@@ -45,9 +45,9 @@ jobs:
 
 ## Configuring the Namespace
 
-The `namespace` input is used to scope sync cleanup. During a sync, the action will delete pipelines in the Fleet Management API that match the same source type (Git) and namespace but are NOT included in the current sync request. This ensures your API state matches your repository while leaving pipelines from other sources or namespaces untouched.
+The `namespace` input is used to scope sync cleanup. During a sync, the action will delete pipelines in Fleet Management that match the same source type (Git) and namespace but are NOT included in the current sync request. This ensures your API state matches your repository while leaving pipelines from other sources or namespaces untouched.
 
-**Note:** Namespace and source type are used to determine which pipelines to delete during cleanup. However, pipelines are identified by name during the sync itself. If a pipeline with the same name already exists in the API (even from a different source or namespace), it will be overwritten. Ensure pipeline names are unique across all sources to avoid conflicts.
+**Note:** Namespace and source type are used to determine which pipelines to delete during cleanup. However, pipelines are identified by name during the sync itself. If a pipeline with the same name already exists in Fleet Management (even from a different source or namespace), it will be overwritten. Ensure pipeline names are unique across all sources to avoid conflicts.
 
 Here are some examples of how you can configure the namespace, though you can use any value that you want, within length limits:
 
@@ -121,8 +121,27 @@ matchers:
 **`my-pipeline.alloy` (Contents)**
 
 ```alloy
-logging {
-  level = "info"
+local.file "example" {
+  filename = "example.txt"
+}
+```
+
+**`monitoring/o11y.yaml` (Metadata)**
+
+```yaml
+name: o11y
+enabled: true
+matchers:
+  - environment=production
+  - service=monitoring
+  - team=platform
+```
+
+**`monitoring/o11y.alloy` (Contents)**
+
+```alloy
+local.file "o11y" {
+  filename = "o11y.txt"
 }
 ```
 
@@ -131,10 +150,8 @@ logging {
 ```text
 .
 └── pipelines/
-    ├── frontend.yaml
-    ├── frontend.alloy
-    ├── backend.yaml
-    ├── backend.alloy
+    ├── my-pipeline.yaml
+    ├── my-pipeline.alloy
     └── monitoring/
         ├── o11y.yaml
         └── o11y.alloy
