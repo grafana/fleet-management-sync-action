@@ -36,24 +36,15 @@ inputs:
     default: ''
 
 runs:
-  using: 'composite'
-  steps:
-    - name: Setup Go
-      uses: actions/setup-go@faf52423ec0d44c58f68e83b614bfcd99dded66f
-      with:
-        go-version-file: '${{ github.action_path }}/go.mod'
-
-    - name: Run Fleet Management Sync
-      shell: bash
-      env:
-        INPUT_PIPELINES_ROOT_PATH: ${{ inputs.pipelines-root-path }}
-        INPUT_FM_URL: ${{ inputs.fm-url }}
-        INPUT_FM_USERNAME: ${{ inputs.fm-username }}
-        INPUT_FM_TOKEN: ${{ inputs.fm-token }}
-        INPUT_TIMEOUT: ${{ inputs.timeout }}
-        INPUT_VERBOSE: ${{ inputs.verbose }}
-        INPUT_DRY_RUN: ${{ inputs.dry-run }}
-        INPUT_NAMESPACE: ${{ inputs.namespace }}
-        INPUT_GLOBAL_MATCHER: ${{ inputs.global-matcher }}
-      run: |
-        go run "${{ github.action_path }}/cmd/sync/main.go"
+  using: 'node20'
+  main: 'invoke-binary.js'
+  env:
+    INPUT_PIPELINES_ROOT_PATH: ${{ inputs.pipelines-root-path }}
+    INPUT_FM_URL: ${{ inputs.fm-url }}
+    INPUT_FM_USERNAME: ${{ inputs.fm-username }}
+    INPUT_FM_TOKEN: ${{ inputs.fm-token }}
+    INPUT_TIMEOUT: ${{ inputs.timeout }}
+    INPUT_VERBOSE: ${{ inputs.verbose }}
+    INPUT_DRY_RUN: ${{ inputs.dry-run }}
+    INPUT_NAMESPACE: ${{ inputs.namespace }}
+    INPUT_GLOBAL_MATCHER: ${{ inputs.global-matcher }}

@@ -40,3 +40,64 @@ jobs:
           cache: false
       - name: Test
         run: go test ./...
+
+  build-binaries:
+    runs-on: github-hosted-ubuntu-x64-small
+    if: github.event_name == 'pull_request'
+    needs: [lint, test]
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@ff7abcd0c3c05ccf6adc123a8cd1fd4fb30fb493
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          ref: ${{ github.head_ref }}
+
+      - name: Set up Go
+        uses: actions/setup-go@faf52423ec0d44c58f68e83b614bfcd99dded66f
+        with:
+          cache: false
+          go-version-file: ./go.mod
+
+      - name: Build binaries for all platforms
+        run: |
+          # Build for Linux x86_64
+          GOOS=linux GOARCH=amd64 go build -o fm-sync-linux-amd64 ./cmd/sync/main.go
+
+          # Build for Linux ARM64
+          GOOS=linux GOARCH=arm64 go build -o fm-sync-linux-arm64 ./cmd/sync/main.go
+
+          # Build for Windows x86_64
+          GOOS=windows GOARCH=amd64 go build -o fm-sync-windows-amd64.exe ./cmd/sync/main.go
+
+          # Build for Windows ARM64
+          GOOS=windows GOARCH=arm64 go build -o fm-sync-windows-arm64.exe ./cmd/sync/main.go
+
+          # Build for macOS x86_64
+          GOOS=darwin GOARCH=amd64 go build -o fm-sync-darwin-amd64 ./cmd/sync/main.go
+
+          # Build for macOS ARM64
+          GOOS=darwin GOARCH=arm64 go build -o fm-sync-darwin-arm64 ./cmd/sync/main.go
+
+      - name: Make binaries executable
+        run: chmod +x fm-sync-*
+
+      - name: Check for changes
+        id: check_changes
+        run: |
+          git add fm-sync-*
+          if git diff --staged --quiet; then
+            echo "has_changes=false" >> $GITHUB_OUTPUT
+          else
+            echo "has_changes=true" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Commit binaries
+        if: steps.check_changes.outputs.has_changes == 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git commit -m "chore: update compiled binaries"
+          git push
