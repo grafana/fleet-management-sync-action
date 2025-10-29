@@ -56,5 +56,4 @@ runs:
         INPUT_NAMESPACE: ${{ inputs.namespace }}
         INPUT_GLOBAL_MATCHER: ${{ inputs.global-matcher }}
       run: |
-        cd "${{ github.action_path }}"
-        go run cmd/sync/main.go
+        go run "${{ github.action_path }}/cmd/sync/main.go"
