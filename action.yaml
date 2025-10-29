@@ -42,11 +42,11 @@ runs:
       uses: actions/setup-go@faf52423ec0d44c58f68e83b614bfcd99dded66f
       with:
         go-version-file: '${{ github.action_path }}/go.mod'
+        cache-dependency-path: '${{ github.action_path }}/go.sum'
 
     - name: Run Fleet Management Sync
       shell: bash
       env:
-        INPUT_PIPELINES_ROOT_PATH: ${{ inputs.pipelines-root-path }}
         INPUT_FM_URL: ${{ inputs.fm-url }}
         INPUT_FM_USERNAME: ${{ inputs.fm-username }}
         INPUT_FM_TOKEN: ${{ inputs.fm-token }}
@@ -55,5 +55,7 @@ runs:
         INPUT_DRY_RUN: ${{ inputs.dry-run }}
         INPUT_NAMESPACE: ${{ inputs.namespace }}
         INPUT_GLOBAL_MATCHER: ${{ inputs.global-matcher }}
+        INPUT_PIPELINES_ROOT_PATH: ${{ github.workspace }}/${{ inputs.pipelines-root-path }}
       run: |
-        go run "${{ github.action_path }}/cmd/sync/main.go"
+        cd "${{ github.action_path }}"
+        go run cmd/sync/main.go
