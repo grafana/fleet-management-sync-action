@@ -57,4 +57,4 @@ runs:
         INPUT_GLOBAL_MATCHER: ${{ inputs.global-matcher }}
       run: |
         cd "${{ github.action_path }}"
-        go run main.go
+        go run cmd/sync/main.go
