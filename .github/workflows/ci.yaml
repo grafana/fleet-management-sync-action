@@ -10,7 +10,7 @@ on:
       - main
 jobs:
   lint:
-    runs-on: github-hosted-ubuntu-x64-small
+    runs-on: ubuntu-x64-small
 
     steps:
       - name: Checkout repo
@@ -27,7 +27,7 @@ jobs:
         with:
           version: v2.1.6
   test:
-    runs-on: github-hosted-ubuntu-x64-small
+    runs-on: ubuntu-x64-small
 
     steps:
       - name: Checkout repo
