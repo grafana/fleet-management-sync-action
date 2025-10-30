@@ -37,9 +37,9 @@ jobs:
 | Input | Description | Required | Default |
 |-------|-------------|----------|---------|
 | `pipelines-root-path` | Root path to start searching for pipeline YAML files | Yes | - |
-| `fm-url` | [Fleet Management API URL](https://grafana.com/docs/grafana-cloud/send-data/fleet-management/api-reference/pipeline-api/#find-the-base-url) | Yes | - |
+| `fm-url` | Fleet Management base API URL, for example: `https://fleet-management-prod-001.grafana.net` | Yes | - |
 | `fm-username` | Fleet Management username for authentication | Yes | - |
-| `fm-token` | Fleet Management API token for authentication | Yes | - |
+| `fm-token` | Grafana Cloud API token with `fleet-management:write` scope | Yes | - |
 | `namespace` | Namespace for the pipelines. See "Configuring the Namespace" for examples. | Yes | - |
 | `global-matcher` | Global matcher added to all pipelines. Useful for targeting specific collector groups across multiple repositories. See "Using Global Matchers" for examples. | No | - |
 
