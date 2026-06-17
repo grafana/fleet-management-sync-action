@@ -5,7 +5,7 @@ go 1.24.3
 require (
 	connectrpc.com/connect v1.16.1
 	github.com/goccy/go-yaml v1.19.2
-	github.com/grafana/fleet-management-api v1.1.0
+	github.com/grafana/fleet-management-api v1.3.0
 	github.com/stretchr/testify v1.11.1
 )
 
