@@ -1,0 +1,4 @@
+config_type: otel
+enabled: true
+matchers:
+- env=prod

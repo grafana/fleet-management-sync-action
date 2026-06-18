@@ -50,7 +50,7 @@ func performDryRun(pipelines []*discovery.Pipeline) error {
 			return fmt.Errorf("failed to marshal pipeline %s: %w", p.Name, err)
 		}
 
-		slog.Info("would sync pipeline", "name", p.Name, "enabled", p.Enabled)
+		slog.Info("would sync pipeline", "name", p.Name, "enabled", p.Enabled, "config_type", p.ConfigType)
 		slog.Debug("pipeline payload", "payload", string(data))
 	}
 

@@ -97,16 +97,20 @@ or
 
 ## Pipeline Configuration
 
-Pipeline definitions require two files in the same directory:
+The action supports two pipeline config types, selected with the optional `config_type` field in
+the YAML metadata. When `config_type` is omitted it defaults to `alloy`.
+
+You can use any directory structure you want, the action will recursively search the
+`pipelines-root-path` for YAML files.
+
+### Alloy pipelines (`config_type: alloy`)
+
+An Alloy pipeline is defined by two files in the same directory:
 
 1. A YAML file (`.yaml` or `.yml`) for metadata.
 2. An Alloy file (`.alloy`) for the pipeline's contents.
 
-The YAML and Alloy files must share the same base name (e.g., `my-pipeline.yaml` and `my-pipeline.alloy`). If a YAML file does not have a corresponding Alloy file with the same base name, the action will fail with an error.
-
-You can use any directory structure you want, the action will recursively search the `pipelines-root-path` for YAML and Alloy files.
-
-### Example
+The YAML and Alloy files must share the same base name (e.g., `my-pipeline.yaml` and `my-pipeline.alloy`). If an Alloy YAML file does not have a corresponding Alloy file with the same base name, the action will fail with an error.
 
 **`my-pipeline.yaml` (Metadata)**
 
@@ -126,35 +130,61 @@ local.file "example" {
 }
 ```
 
-**`monitoring/o11y.yaml` (Metadata)**
-
-```yaml
-name: o11y
-enabled: true
-matchers:
-  - environment=production
-  - service=monitoring
-  - team=platform
-```
-
-**`monitoring/o11y.alloy` (Contents)**
-
-```alloy
-local.file "o11y" {
-  filename = "o11y.txt"
-}
-```
-
-### Directory Structure
+Directory structure:
 
 ```text
 .
 └── pipelines/
-    ├── my-pipeline.yaml
-    ├── my-pipeline.alloy
+    ├── my-pipeline.yaml    # Alloy metadata
+    └── my-pipeline.alloy   # Alloy contents
+```
+
+### OTel collector pipelines (`config_type: otel`)
+
+An OTel collector pipeline is defined by a **single** YAML file. It carries the same metadata fields
+plus the collector config inline under `contents`. There is no separate contents file.
+
+**`monitoring/o11y.yaml`**
+
+```yaml
+name: o11y           # Optional - defaults to the base filename without extension
+config_type: otel
+enabled: true
+matchers:
+  - environment=production
+  - service=monitoring
+contents: |
+  receivers:
+    otlp:
+      protocols: { grpc: {} }
+  exporters:
+    debug: {}
+  service:
+    pipelines:
+      traces: { receivers: [otlp], exporters: [debug] }
+```
+
+Directory structure:
+
+```text
+.
+└── pipelines/
     └── monitoring/
-        ├── o11y.yaml
-        └── o11y.alloy
+        └── o11y.yaml       # OTel pipeline (single file)
+```
+
+### Mixing config types
+
+Both config types may be mixed within the same `pipelines-root-path`. The action recursively
+searches the tree and selects the config type per file based on its `config_type` field:
+
+```text
+.
+└── pipelines/
+    ├── my-pipeline.yaml    # Alloy metadata
+    ├── my-pipeline.alloy   # Alloy contents
+    └── monitoring/
+        └── o11y.yaml       # OTel pipeline (single file)
 ```
 
 ## Troubleshooting
