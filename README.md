@@ -100,7 +100,7 @@ or
 The action supports two pipeline config types, selected with the optional `config_type` field in
 the YAML metadata. When `config_type` is omitted it defaults to `alloy`.
 
-You can use any directory structure you want, the action will recursively search the
+You can use any directory structure you want. The action will recursively search the
 `pipelines-root-path` for YAML files.
 
 ### Alloy pipelines (`config_type: alloy`)
@@ -139,9 +139,9 @@ Directory structure:
     └── my-pipeline.alloy   # Alloy contents
 ```
 
-### OTel collector pipelines (`config_type: otel`)
+### OTel Collector pipelines (`config_type: otel`)
 
-An OTel collector pipeline is defined by a **single** YAML file. It carries the same metadata fields
+An OTel Collector pipeline is defined by a **single** YAML file. It carries the same metadata fields
 plus the collector config inline under `contents`. There is no separate contents file.
 
 **`monitoring/o11y.yaml`**
