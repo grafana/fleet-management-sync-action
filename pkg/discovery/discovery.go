@@ -45,15 +45,6 @@ func FindPipelines(ctx context.Context, cfg *config.Config) ([]*Pipeline, error)
 			return nil
 		}
 
-		// build .alloy path
-		alloyPath := strings.TrimSuffix(path, ext) + ".alloy"
-
-		// read and set pipeline contents
-		contents, err := os.ReadFile(alloyPath)
-		if err != nil {
-			return fmt.Errorf("failed to read alloy file %s: %w", alloyPath, err)
-		}
-
 		data, err := os.ReadFile(path)
 		if err != nil {
 			return fmt.Errorf("failed to read file %s: %w", path, err)
@@ -65,7 +56,25 @@ func FindPipelines(ctx context.Context, cfg *config.Config) ([]*Pipeline, error)
 			return fmt.Errorf("failed to parse pipeline from %s: %w", path, err)
 		}
 
-		p.Contents = string(contents)
+		// Resolve the pipeline contents based on its config type. Alloy pipelines
+		// (the default) keep their contents in a sibling .alloy file, while OTel
+		// pipelines carry their contents inline in the YAML file.
+		switch p.ConfigType {
+		case "", ConfigTypeAlloy:
+			p.ConfigType = ConfigTypeAlloy
+			alloyPath := strings.TrimSuffix(path, ext) + ".alloy"
+			contents, err := os.ReadFile(alloyPath)
+			if err != nil {
+				return fmt.Errorf("failed to read alloy file %s: %w", alloyPath, err)
+			}
+			p.Contents = string(contents)
+		case ConfigTypeOTel:
+			if strings.TrimSpace(p.Contents) == "" {
+				return fmt.Errorf("otel pipeline %s has empty contents", path)
+			}
+		default:
+			return fmt.Errorf("invalid config_type %q in %s", p.ConfigType, path)
+		}
 
 		// If no name provided, use filename without extension
 		if p.Name == "" {

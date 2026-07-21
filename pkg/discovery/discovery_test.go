@@ -32,6 +32,11 @@ func TestDiscoverPipelines(t *testing.T) {
 			rootPath: "testdata/invalid_yaml_typo",
 			wantErr:  true,
 		},
+		{
+			name:     "discover otel pipeline with empty contents",
+			rootPath: "testdata/invalid_otel_empty",
+			wantErr:  true,
+		},
 	}
 
 	for _, tt := range tests {
@@ -60,6 +65,33 @@ func TestDiscoverPipelines(t *testing.T) {
 			require.ElementsMatch(t, tt.wantPipelines, names)
 		})
 	}
+}
+
+func TestDiscoverPipelinesConfigTypes(t *testing.T) {
+	input := &config.Config{
+		PipelinesRootPath: "testdata/valid_mixed_pipelines",
+		Username:          "test",
+		Token:             "test",
+	}
+
+	pipelines, err := FindPipelines(context.Background(), input)
+	require.NoError(t, err)
+	require.Len(t, pipelines, 2)
+
+	byName := make(map[string]*Pipeline)
+	for _, p := range pipelines {
+		byName[p.Name] = p
+	}
+
+	alloy := byName["alloy-pipe"]
+	require.NotNil(t, alloy)
+	require.Equal(t, ConfigTypeAlloy, alloy.ConfigType)
+	require.Contains(t, alloy.Contents, "logging")
+
+	otel := byName["otel-pipe"]
+	require.NotNil(t, otel)
+	require.Equal(t, ConfigTypeOTel, otel.ConfigType)
+	require.Contains(t, otel.Contents, "receivers:")
 }
 
 

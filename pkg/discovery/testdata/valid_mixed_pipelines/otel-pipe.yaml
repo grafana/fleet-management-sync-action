@@ -1,0 +1,13 @@
+config_type: otel
+enabled: true
+matchers:
+- env=prod
+contents: |
+  receivers:
+    otlp:
+      protocols: { grpc: {} }
+  exporters:
+    debug: {}
+  service:
+    pipelines:
+      traces: { receivers: [otlp], exporters: [debug] }
