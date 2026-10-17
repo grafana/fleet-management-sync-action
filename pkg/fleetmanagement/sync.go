@@ -8,7 +8,7 @@ import (
 	"log/slog"
 	"net/http"
 
-	"connectrpc.com/connect"
+	"connectrpc.com/connect/v2"
 	pipelinev1 "github.com/grafana/fleet-management-api/api/gen/proto/go/pipeline/v1"
 	"github.com/grafana/fleet-management-api/api/gen/proto/go/pipeline/v1/pipelinev1connect"
 	"github.com/grafana/fleet-management-sync-action/pkg/config"
